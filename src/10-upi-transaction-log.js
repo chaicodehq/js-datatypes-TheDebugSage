@@ -47,5 +47,98 @@
  *   //      frequentContact: "Swiggy", allAbove100: false, hasLargeTransaction: true }
  */
 export function analyzeUPITransactions(transactions) {
-  // Your code here
+  
+  if (!Array.isArray(transactions) || transactions.length === 0) {
+    return null;
+  }
+
+  const valid = transactions.filter(function (t) {
+    return (
+      t &&
+      typeof t.amount === "number" &&
+      t.amount > 0 &&
+      (t.type === "credit" || t.type === "debit")
+    );
+  });
+
+  if (valid.length === 0) return null;
+
+  const totalCredit = valid
+    .filter(function (t) {
+      return t.type === "credit";
+    })
+    .reduce(function (sum, t) {
+      return sum + t.amount;
+    }, 0);
+
+  const totalDebit = valid
+    .filter(function (t) {
+      return t.type === "debit";
+    })
+    .reduce(function (sum, t) {
+      return sum + t.amount;
+    }, 0);
+
+  const netBalance = totalCredit - totalDebit;
+  const transactionCount = valid.length;
+
+  const totalAmount = valid.reduce(function (sum, t) {
+    return sum + t.amount;
+  }, 0);
+
+  const avgTransaction = Math.round(totalAmount / transactionCount);
+
+  const highestTransaction = valid.reduce(function (max, t) {
+    return t.amount > max.amount ? t : max;
+  }, valid[0]);
+
+  const categoryBreakdown = valid.reduce(function (acc, t) {
+    if (!acc[t.category]) {
+      acc[t.category] = 0;
+    }
+    acc[t.category] += t.amount;
+    return acc;
+  }, {});
+
+  const contactCount = valid.reduce(function (acc, t) {
+    if (!acc[t.to]) {
+      acc[t.to] = 0;
+    }
+    acc[t.to]++;
+    return acc;
+  }, {});
+
+  let frequentContact = null;
+  let maxCount = 0;
+
+  for (var i = 0; i < valid.length; i++) {
+    var name = valid[i].to;
+    if (contactCount[name] > maxCount) {
+      maxCount = contactCount[name];
+      frequentContact = name;
+    }
+  }
+
+  const allAbove100 = valid.every(function (t) {
+    return t.amount > 100;
+  });
+
+  const hasLargeTransaction = valid.some(function (t) {
+    return t.amount >= 5000;
+  });
+
+  return {
+    totalCredit: totalCredit,
+    totalDebit: totalDebit,
+    netBalance: netBalance,
+    transactionCount: transactionCount,
+    avgTransaction: avgTransaction,
+    highestTransaction: highestTransaction,
+    categoryBreakdown: categoryBreakdown,
+    frequentContact: frequentContact,
+    allAbove100: allAbove100,
+    hasLargeTransaction: hasLargeTransaction
+  };
 }
+
+

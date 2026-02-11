@@ -62,5 +62,98 @@
  *   // => { isValid: false, errors: { name: "...", email: "...", ... } }
  */
 export function validateForm(formData) {
-  // Your code here
+  
+  const errors = {};
+
+  if (
+    typeof formData.name !== "string" ||
+    formData.name.trim().length < 2 ||
+    formData.name.trim().length > 50
+  ) {
+    errors.name = "Name must be 2-50 characters";
+  }
+
+  if (typeof formData.email !== "string") {
+    errors.email = "Invalid email format";
+  } else {
+    const atIndex = formData.email.indexOf("@");
+    const lastAtIndex = formData.email.lastIndexOf("@");
+    const dotIndex = formData.email.indexOf(".", atIndex + 1);
+
+    if (
+      atIndex === -1 ||
+      atIndex !== lastAtIndex ||
+      dotIndex === -1
+    ) {
+      errors.email = "Invalid email format";
+    }
+  }
+
+  if (typeof formData.phone !== "string" || formData.phone.length !== 10) {
+    errors.phone = "Invalid Indian phone number";
+  } else {
+    const firstDigit = formData.phone[0];
+    let allDigits = true;
+
+    for (let i = 0; i < formData.phone.length; i++) {
+      if (formData.phone[i] < "0" || formData.phone[i] > "9") {
+        allDigits = false;
+        break;
+      }
+    }
+
+    if (
+      !allDigits ||
+      !["6", "7", "8", "9"].includes(firstDigit)
+    ) {
+      errors.phone = "Invalid Indian phone number";
+    }
+  }
+
+  let ageValue = formData.age;
+
+  if (typeof ageValue === "string") {
+    ageValue = parseInt(ageValue);
+  }
+
+  if (
+    typeof ageValue !== "number" ||
+    isNaN(ageValue) ||
+    !Number.isInteger(ageValue) ||
+    ageValue < 16 ||
+    ageValue > 100
+  ) {
+    errors.age = "Age must be an integer between 16 and 100";
+  }
+
+  if (
+    typeof formData.pincode !== "string" ||
+    formData.pincode.length !== 6 ||
+    formData.pincode.startsWith("0")
+  ) {
+    errors.pincode = "Invalid Indian pincode";
+  } else {
+    for (let i = 0; i < formData.pincode.length; i++) {
+      if (formData.pincode[i] < "0" || formData.pincode[i] > "9") {
+        errors.pincode = "Invalid Indian pincode";
+        break;
+      }
+    }
+  }
+
+  const stateValue = formData.state?.trim() ?? "";
+
+  if (typeof stateValue !== "string" || stateValue.length === 0) {
+    errors.state = "State is required";
+  }
+
+  if (!Boolean(formData.agreeTerms)) {
+    errors.agreeTerms = "Must agree to terms";
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors: errors
+  };
 }
+
